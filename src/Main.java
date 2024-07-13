@@ -19,10 +19,37 @@ public class Main {
             int totalNumberR = main.onlyR(s);
             System.out.println("Строка " + s + "; Глобальное кол-во R в этой строке:  " + totalNumberR);
 
+
         };
 
+        Runnable max = () -> {
+            while (!Thread.interrupted()) {
 
-        // write your code here
+                try {
+
+                    synchronized (sizeToFreq) {
+                        sizeToFreq.wait();
+                        Main main = new Main();
+                        main.actuallyMax();//вычисление максимального ключа в мапе
+                    }
+
+
+                } catch (InterruptedException e) {
+                    System.out.println("Завершение");
+                    Thread.currentThread().interrupt();
+
+                }
+
+
+            }
+
+        };
+        //Запуск потока, считающего максимум в мапе
+        Thread threadMax = new Thread(max);
+        threadMax.start();
+
+
+        //заводим потоки генерации строк
         List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < numberThread; i++) {
             Thread thread = new Thread(runnable);
@@ -36,13 +63,15 @@ public class Main {
             thread.join();
 
         }
+//        System.out.println("Останавливаем поток поиска максимума");
+        threadMax.interrupt();//остановили поток, считающий максимум
         //теперь надо посчитать какая частота (длина последовательности) самая длинная и расположить по убыванию
         List<Integer> list = new ArrayList<>();
         list.addAll(sizeToFreq.keySet());// в ключах посчитаны дланы последовательностей в строке
         Collections.sort(list);
         Collections.reverse(list);
-        System.out.println(list);
-        System.out.println("Кол-во R в последовательности - частота появления");//поиск с
+//        System.out.println(list);
+//        System.out.println("Кол-во R в последовательности - частота появления");//поиск с
         for (int i = 0; i < list.size(); i++) {
             if (i != 0) {
                 System.out.println("- " + list.get(i) + ", встретилось " + sizeToFreq.get(list.get(i)) + " раз");
@@ -52,8 +81,6 @@ public class Main {
             }
         }
 
-
-        
 
     }
 
@@ -91,13 +118,26 @@ public class Main {
 
                 }
             }
+            sizeToFreq.notify();
 
             return totalNumberR;
 
 
         }
+
+
     }
 
+    public int actuallyMax() {
+        //поиск масимального ключа в мапе частот
+        List<Integer> maxFreq = new ArrayList<>();
+        maxFreq.addAll(sizeToFreq.keySet());
+        Collections.sort(maxFreq);
+        System.out.println("Текущий лидер в списке частот: " + maxFreq.get(maxFreq.size() - 1));
+
+
+        return 0;
+    }
 
 }
 
