@@ -53,8 +53,6 @@ public class Main {
         }
 
 
-        
-
     }
 
     public static String generateRoute(String letters, int length) {
